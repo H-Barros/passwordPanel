@@ -1,0 +1,2 @@
+class PasswordPanelDb < ApplicationRecord
+end
