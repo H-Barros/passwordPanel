@@ -1,5 +1,7 @@
 class PasswordPanelDbsController < ApplicationController
   before_action :set_password_panel_db, only: [:update, :show, :destroy]
+  before_action :next_password, only: [:chamar]
+
 
   # GET /password_panel_dbs
   def index
@@ -34,13 +36,8 @@ class PasswordPanelDbsController < ApplicationController
   end
 
   def chamar
-    senhas_sem_atendimento = []
 
-    PasswordPanelDb.all.each do |senha|
-      senhas_sem_atendimento << senha if senha.inicioAtendimento == null
-    end
-
-    render json: @teste
+    render json: @password
   end
 
   # DELETE /password_panel_dbs/1
@@ -57,5 +54,24 @@ class PasswordPanelDbsController < ApplicationController
     # Only allow a list of trusted parameters through.
     def password_panel_db_params
       params.require(:password_panel_db).permit(:numero, :preferencial, :setor, :servico, :inicioAtendimento, :finalAtendimento, :atendente)
+    end
+
+    def next_password
+      passwords_order_created = PasswordPanelDb.order(created_at: :asc)    
+      @password
+      i = 0 
+
+      loop do
+        i += 1
+
+        if passwords_order_created[i].inicioAtendimento == nil
+          @password = PasswordPanelDb.find(passwords_order_created[i].id)
+          @password.inicioAtendimento = Time.new
+          @password.save
+          @password = PasswordPanelDb.find(passwords_order_created[i].id)
+
+          break
+        end
+      end
     end
 end
