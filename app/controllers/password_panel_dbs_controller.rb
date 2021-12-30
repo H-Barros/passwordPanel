@@ -1,21 +1,19 @@
 class PasswordPanelDbsController < ApplicationController
   before_action :set_password_panel_db, only: [:update, :show, :destroy]
   before_action :next_password, only: [:chamar]
+  before_action :password_cancel, only: [:cancel]
 
 
-  # GET /password_panel_dbs
   def index
     @password_panel_dbs = PasswordPanelDb.all
 
     render json: @password_panel_dbs
   end
 
-  # GET /password_panel_dbs/1
   def show
     render json: @password_panel_db
   end
 
-  # POST /password_panel_dbs
   def create
     @password_panel_db = PasswordPanelDb.new(password_panel_db_params)
 
@@ -26,7 +24,6 @@ class PasswordPanelDbsController < ApplicationController
     end
   end
 
-  # PATCH/PUT /password_panel_dbs/1
   def update
     if @password_panel_db.update(password_panel_db_params)
       render json: @password_panel_db
@@ -35,14 +32,16 @@ class PasswordPanelDbsController < ApplicationController
     end
   end
 
-  def chamar
+  def destroy
+    @password_panel_db.destroy
+  end
 
+  def chamar
     render json: @password
   end
 
-  # DELETE /password_panel_dbs/1
-  def destroy
-    @password_panel_db.destroy
+  def cancel
+    render json: @response
   end
 
   private
@@ -53,18 +52,22 @@ class PasswordPanelDbsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def password_panel_db_params
-      params.require(:password_panel_db).permit(:numero, :preferencial, :setor, :servico, :inicioAtendimento, :finalAtendimento, :atendente)
+      params.require(:password_panel_db).permit(:numero, :preferencial, :setor, :servico, :inicioAtendimento, :finalAtendimento, :atendente, :cancelado)
     end
 
     def next_password
       passwords_order_created = PasswordPanelDb.order(created_at: :asc)    
       @password
-      i = 0 
+      i = -1 
 
       loop do
         i += 1
 
-        if passwords_order_created[i].inicioAtendimento == nil
+        if i >= passwords_order_created.length
+          @password = {"message" => "Don't have more passwords, please await next client"}
+
+          break
+        elsif passwords_order_created[i].inicioAtendimento == nil
           @password = PasswordPanelDb.find(passwords_order_created[i].id)
           @password.inicioAtendimento = Time.new
           @password.save
@@ -74,4 +77,19 @@ class PasswordPanelDbsController < ApplicationController
         end
       end
     end
+
+    def password_cancel
+      cancel = PasswordPanelDb.select(:id).where(params[:id])
+      @response
+
+      if cancel.empty?
+        @response = {"message" => "This password don't exist"}
+      else
+        cancel = PasswordPanelDb.find(@cancel[0].id)
+        cancel.cancelado = true
+        cancel.save
+        @response = {"message" => "Password #{cancel.numero} is canceled"}
+      end
+    end
+
 end
