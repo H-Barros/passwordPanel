@@ -79,13 +79,13 @@ class PasswordPanelDbsController < ApplicationController
     end
 
     def password_cancel
-      cancel = PasswordPanelDb.select(:id).where(params[:id])
+      cancel = PasswordPanelDb.select(:id).where("id = '#{params[:id]}'")
       @response
 
       if cancel.empty?
         @response = {"message" => "This password don't exist"}
       else
-        cancel = PasswordPanelDb.find(@cancel[0].id)
+        cancel = PasswordPanelDb.find(cancel[0].id)
         cancel.cancelado = true
         cancel.save
         @response = {"message" => "Password #{cancel.numero} is canceled"}
