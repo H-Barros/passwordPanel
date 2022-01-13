@@ -94,26 +94,34 @@ class PasswordPanelDbsController < ApplicationController
     end
 
     def end_password
-      password = PasswordPanelDb.select(:id).where("id = '#{params[:id]}'")
-
+      password = PasswordPanelDb.select(:id,:cancelado,:finalAtendimento).where("id = '#{params[:id]}'")
       password = PasswordPanelDb.find(password[0].id)
-      password.finalAtendimento = Time.new
-      password.save
-
-      @endOfAttendance = {"message" => "End of attendance, password finalized"}
+      if password.cancelado.trust
+        @endOfAttendance = {"message" => "password canceled cannot be finalized"}
+       elsif password.finalAtendimento != nil 
+        @endOfAttendance = {"message" => "this password has already been terminated"}
+      else
+        @endOfAttendance = {"message" => "End of attendance, password finalized"}
+        password.finalAtendimento = Time.new
+        password.save
+      end
     end
 
     def password_cancel
-      cancel = PasswordPanelDb.select(:id).where("id = '#{params[:id]}'")
+      cancel = PasswordPanelDb.select(:id,:cancelado).where("id = '#{params[:id]}'")
       @response
 
+      
       if cancel.empty?
         @response = {"message" => "This password don't exist"}
+      elsif cancel[0].cancelado.trust
+        numSenha = PasswordPanelDb.find(cancel[0].id)
+        @response = {"message" => "this password #{numSenha.numero} has already been canceled"}
       else
-        cancel = PasswordPanelDb.find(cancel[0].id)
-        cancel.cancelado = true
-        cancel.save
-        @response = {"message" => "Password #{cancel.numero} is canceled"}
+        numSenha = PasswordPanelDb.find(cancel[0].id)
+        numSenha.cancelado = true
+        numSenha.save
+        @response = {"message" => "Password #{numSenha.numero} is canceled"}
       end
     end
 end
