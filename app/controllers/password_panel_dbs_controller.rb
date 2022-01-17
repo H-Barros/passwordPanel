@@ -40,6 +40,10 @@ class PasswordPanelDbsController < ApplicationController
     render json: @password
   end
 
+  def callFail
+    render json: {"message" => "it is necessary to pass a parameter, accepted parameters: normal or preferencial"}
+  end
+
   def end
    render json: @endOfAttendance
   end
@@ -47,6 +51,15 @@ class PasswordPanelDbsController < ApplicationController
   def cancel
     render json: @response
   end
+
+  def report
+      firstReportDate = params[:filter][0..9]
+      lastReportDate = params[:filter][10..19]
+      firstDateFormat = "#{firstReportDate} 00:00:00"
+      lastDateFormat = "#{lastReportDate} 23:59:59"
+      render json: PasswordPanelDb.where(inicio_atendimento: firstDateFormat..lastDateFormat).order(:inicio_atendimento)
+  end
+
 
   private
     # Use callbacks to share common setup or constraints between actions.
@@ -56,12 +69,12 @@ class PasswordPanelDbsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def password_panel_db_params
-      params.require(:password_panel_db).permit(:numero, :preferencial, :setor, :servico, :inicioAtendimento, :finalAtendimento, :atendente, :cancelado)
+      params.require(:password_panel_db).permit(:numero, :preferencial, :setor, :servico, :inicio_atendimento, :final_atendimento, :atendente, :cancelado)
     end
 
     def next_password
-      passwords_preferencial = PasswordPanelDb.where(preferencial: true, inicioAtendimento: nil).order(created_at: :asc)
-      passwords_normal = PasswordPanelDb.where(preferencial: false, inicioAtendimento: nil).order(created_at: :asc)
+      passwords_preferencial = PasswordPanelDb.where(preferencial: true, inicio_atendimento: nil).order(created_at: :asc)
+      passwords_normal = PasswordPanelDb.where(preferencial: false, inicio_atendimento: nil).order(created_at: :asc)
       @password
 
       if passwords_preferencial.empty? && passwords_normal.empty?
@@ -69,40 +82,40 @@ class PasswordPanelDbsController < ApplicationController
 
       elsif params[:pref] == 'preferencial' && !passwords_preferencial.empty?
         @password = PasswordPanelDb.find(passwords_preferencial[0].id)
-        @password.inicioAtendimento = Time.new
+        @password.inicio_atendimento = Time.new
         @password.save
         @password = PasswordPanelDb.find(passwords_preferencial[0].id)
 
       elsif params[:pref] == 'normal' && !passwords_normal.empty?
         @password = PasswordPanelDb.find(passwords_normal[0].id)
-        @password.inicioAtendimento = Time.new
+        @password.inicio_atendimento = Time.new
         @password.save
         @password = PasswordPanelDb.find(passwords_normal[0].id)
 
       elsif params[:pref] == 'preferencial' && passwords_preferencial.empty? && !passwords_normal.empty?
         @password = PasswordPanelDb.find(passwords_normal[0].id)
-        @password.inicioAtendimento = Time.new
+        @password.inicio_atendimento = Time.new
         @password.save
         @password = PasswordPanelDb.find(passwords_normal[0].id)
 
       elsif params[:pref] == 'normal' && passwords_normal.empty? && !passwords_preferencial.empty?
         @password = PasswordPanelDb.find(passwords_preferencial[0].id)
-        @password.inicioAtendimento = Time.new
+        @password.inicio_atendimento = Time.new
         @password.save
         @password = PasswordPanelDb.find(passwords_preferencial[0].id)
       end
     end
 
     def end_password
-      password = PasswordPanelDb.select(:id,:cancelado,:finalAtendimento).where("id = '#{params[:id]}'")
+      password = PasswordPanelDb.select(:id,:cancelado,:final_atendimento).where("id = '#{params[:id]}'")
       password = PasswordPanelDb.find(password[0].id)
       if password.cancelado.trust
         @endOfAttendance = {"message" => "password canceled cannot be finalized"}
-       elsif password.finalAtendimento != nil 
+       elsif password.final_atendimento != nil 
         @endOfAttendance = {"message" => "this password has already been terminated"}
       else
         @endOfAttendance = {"message" => "End of attendance, password finalized"}
-        password.finalAtendimento = Time.new
+        password.final_atendimento = Time.new
         password.save
       end
     end
@@ -124,4 +137,4 @@ class PasswordPanelDbsController < ApplicationController
         @response = {"message" => "Password #{numSenha.numero} is canceled"}
       end
     end
-end
+  end

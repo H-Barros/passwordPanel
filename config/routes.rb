@@ -6,4 +6,6 @@ Rails.application.routes.draw do
   get 'call/:pref', to: 'password_panel_dbs#call'
   get 'cancel/:id', to: 'password_panel_dbs#cancel'
   get 'end/:id', to: 'password_panel_dbs#end'
+  get 'call/', to: 'password_panel_dbs#callFail'
+  get 'report/:filter', to: 'password_panel_dbs#report'
 end
