@@ -46,7 +46,7 @@ class PasswordPanelDbsController < ApplicationController
 
 
   def end
-   render json: @endOfAttendance
+   render json: @end_of_attendence
   end
 
   def cancel
@@ -54,17 +54,16 @@ class PasswordPanelDbsController < ApplicationController
   end
 
   def report
-      firstReportDate = params[:filter][0..9]
-      lastReportDate = params[:filter][10..19]
-      firstDateFormat = "#{firstReportDate} 00:00:00"
-      lastDateFormat = "#{lastReportDate} 23:59:59" 
-      result = PasswordPanelDb.where(inicio_atendimento: firstDateFormat..lastDateFormat).order(:inicio_atendimento)
+      first_report_date = params[:filter][0..9]
+      last_report_date = params[:filter][10..19]
+      first_date_format = "#{first_report_date} 00:00:00"
+      last_date_format = "#{last_report_date} 23:59:59" 
+      result = PasswordPanelDb.where(inicio_atendimento: first_date_format..last_date_format).order(:inicio_atendimento)
       if result.empty?
         render json: {"message" => "Nenhum resultado encontrado"}
       else
         render json: result
       end
-
   end
 
   private
@@ -116,11 +115,11 @@ class PasswordPanelDbsController < ApplicationController
             password = PasswordPanelDb.select(:id,:cancelado,:final_atendimento).where("id = '#{params[:id]}'")
             password = PasswordPanelDb.find(password[0].id)
             if password.cancelado.trust
-              @endOfAttendance = {"message" => "senha cancelada não pode ser finalizada"}
+              @end_of_attendence = {"message" => "senha cancelada não pode ser finalizada"}
              elsif password.final_atendimento != nil 
-              @endOfAttendance = {"message" => "essa senha já foi encerrada"}
+              @end_of_attendence = {"message" => "essa senha já foi encerrada"}
             else
-              @endOfAttendance = {"message" => "Senha finaliza com sucesso!"}
+              @end_of_attendence = {"message" => "Senha finaliza com sucesso!"}
               password.final_atendimento = Time.new
               password.save
             end
@@ -134,13 +133,13 @@ class PasswordPanelDbsController < ApplicationController
             if cancel.empty?
               @response = {"message" => "Esta senha não existe"}
             elsif cancel[0].cancelado.trust
-              numSenha = PasswordPanelDb.find(cancel[0].id)
-              @response = {"message" => "senha #{numSenha.numero} já foi cancelada"}
+              num_senha = PasswordPanelDb.find(cancel[0].id)
+              @response = {"message" => "senha #{num_senha.numero} já foi cancelada"}
             else
-              numSenha = PasswordPanelDb.find(cancel[0].id)
-              numSenha.cancelado = true
-              numSenha.save
-              @response = {"message" => "A senha #{numSenha.numero} foi cancelada"}
+              num_senha = PasswordPanelDb.find(cancel[0].id)
+              num_senha.cancelado = true
+              num_senha.save
+              @response = {"message" => "A senha #{num_senha.numero} foi cancelada"}
             end
           end
   end
