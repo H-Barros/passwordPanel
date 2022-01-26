@@ -1,8 +1,5 @@
 class PasswordPanelDbsController < ApplicationController
   before_action :set_password_panel_db, only: [:update, :show, :destroy]
-  before_action :next_password, only: [:call]
-  before_action :password_cancel, only: [:cancel]
-  before_action :end_password, only: [:end]
 
   def index
     @password_panel_dbs = PasswordPanelDb.all.order(:id)
@@ -37,7 +34,7 @@ class PasswordPanelDbsController < ApplicationController
   end
 
   def call
-    render json: @password
+    render json: PasswordPanelDb.next_password(params[:pref])
   end
 
   def callFail
@@ -46,11 +43,11 @@ class PasswordPanelDbsController < ApplicationController
 
 
   def end
-   render json: @end_of_attendence
+    render json: PasswordPanelDb.end_password(params[:id])
   end
 
   def cancel
-    render json: @response
+    render json: PasswordPanelDb.cancel_password(params[:id])
   end
 
   def report
@@ -66,80 +63,12 @@ class PasswordPanelDbsController < ApplicationController
       end
   end
 
-  private
-          # Use callbacks to share common setup or constraints between actions.
-          def set_password_panel_db
-            @password_panel_db = PasswordPanelDb.find(params[:id])
-          end
-      
-          # Only allow a list of trusted parameters through.
-          def password_panel_db_params
-            params.require(:password_panel_db).permit(:numero, :preferencial, :setor, :servico, :inicio_atendimento, :final_atendimento, :atendente, :cancelado)
-          end
-      
-          def next_password
-            passwords_preferencial = PasswordPanelDb.where(preferencial: true, inicio_atendimento: nil).order(created_at: :asc)
-            passwords_normal = PasswordPanelDb.where(preferencial: false, inicio_atendimento: nil).order(created_at: :asc)
-            @password
-      
-            if passwords_preferencial.empty? && passwords_normal.empty?
-              @password = {"message" => "Nenhuma senha encontrada, aguarde o próximo cliente"}
-        
-            elsif params[:pref] == 'preferencial' && !passwords_preferencial.empty?
-              @password = PasswordPanelDb.find(passwords_preferencial[0].id)
-              @password.inicio_atendimento = Time.new
-              @password.save
-              @password = PasswordPanelDb.find(passwords_preferencial[0].id)
-      
-            elsif params[:pref] == 'normal' && !passwords_normal.empty?
-              @password = PasswordPanelDb.find(passwords_normal[0].id)
-              @password.inicio_atendimento = Time.new
-              @password.save
-              @password = PasswordPanelDb.find(passwords_normal[0].id)
-      
-            elsif params[:pref] == 'preferencial' && passwords_preferencial.empty? && !passwords_normal.empty?
-              @password = PasswordPanelDb.find(passwords_normal[0].id)
-              @password.inicio_atendimento = Time.new
-              @password.save
-              @password = PasswordPanelDb.find(passwords_normal[0].id)
-      
-            elsif params[:pref] == 'normal' && passwords_normal.empty? && !passwords_preferencial.empty?
-              @password = PasswordPanelDb.find(passwords_preferencial[0].id)
-              @password.inicio_atendimento = Time.new
-              @password.save
-              @password = PasswordPanelDb.find(passwords_preferencial[0].id)
-            end
-          end
-      
-          def end_password
-            password = PasswordPanelDb.select(:id,:cancelado,:final_atendimento).where("id = '#{params[:id]}'")
-            password = PasswordPanelDb.find(password[0].id)
-            if password.cancelado.trust
-              @end_of_attendence = {"message" => "senha cancelada não pode ser finalizada"}
-             elsif password.final_atendimento != nil 
-              @end_of_attendence = {"message" => "essa senha já foi encerrada"}
-            else
-              @end_of_attendence = {"message" => "Senha finaliza com sucesso!"}
-              password.final_atendimento = Time.new
-              password.save
-            end
-          end
-  
-          def password_cancel
-            cancel = PasswordPanelDb.select(:id,:cancelado).where("id = '#{params[:id]}'")
-            @response
-      
-            
-            if cancel.empty?
-              @response = {"message" => "Esta senha não existe"}
-            elsif cancel[0].cancelado.trust
-              num_senha = PasswordPanelDb.find(cancel[0].id)
-              @response = {"message" => "senha #{num_senha.numero} já foi cancelada"}
-            else
-              num_senha = PasswordPanelDb.find(cancel[0].id)
-              num_senha.cancelado = true
-              num_senha.save
-              @response = {"message" => "A senha #{num_senha.numero} foi cancelada"}
-            end
-          end
+private
+  def set_password_panel_db
+    @password_panel_db = PasswordPanelDb.find(params[:id])
   end
+      
+  def password_panel_db_params
+    params.require(:password_panel_db).permit(:numero, :preferencial, :setor, :servico, :inicio_atendimento, :final_atendimento, :atendente, :cancelado)
+  end
+end
