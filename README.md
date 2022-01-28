@@ -44,7 +44,7 @@ Para rodar o projeto você vai precisar dos seguintes programas instalados:
 
 1. Clone o repositório para sua máquina
 2. Inicie o Postgres
-3. Rode o comando "rails db:create db:create"
+3. Rode o comando "rails db:create db:migrate"
 4. Inicie o servidor com "rails s"
 5. Acesse a API pelo URL "http://localhost:3000/"
 
