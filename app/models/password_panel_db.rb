@@ -8,6 +8,7 @@ class PasswordPanelDb < ApplicationRecord
             end_of_attendence = {"message" => "senha cancelada não pode ser finalizada"}
         elsif password.final_atendimento != nil 
             end_of_attendence = {"message" => "essa senha já foi encerrada"}
+        elsif 
         else
             end_of_attendence = {"message" => "Senha finaliza com sucesso!"}
             password.final_atendimento = Time.new
@@ -65,8 +66,8 @@ class PasswordPanelDb < ApplicationRecord
           password.inicio_atendimento = Time.new
           password.save
           password = PasswordPanelDb.find(passwords_preferencial[0].id)
-        end
 
         return password
     end
+
 end
