@@ -37,9 +37,18 @@ class PasswordPanelDbsController < ApplicationController
     render json: PasswordPanelDb.next_password(params[:pref])
   end
 
-  def callFail
+  def call_fail
     render json: {"message" => "É necessário passar um parâmetro, parâmetros aceitos: normal ou preferencial"}
   end
+
+  def end_fail
+    render json: {"message" => "É necessário passar um parâmetro valido"}
+  end
+
+  def cancel_fail
+    render json: {"message" => "É necessário passar um parâmetro valido para essa rota"}
+  end
+
 
 
   def end
