@@ -10,6 +10,4 @@ Rails.application.routes.draw do
   # !rotas de erro!
   get 'end', to: 'password_panel_dbs#end_fail'
   get 'cancel', to: 'password_panel_dbs#cancel_fail'
-  # Websocket
-  mount ActionCable.server => "/cable"
 end

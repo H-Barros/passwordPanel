@@ -35,8 +35,6 @@ class PasswordPanelDbsController < ApplicationController
 
   def call
     render json: PasswordPanelDb.next_password()
-
-    PasswordChannel.broadcast_to "password_channel", PasswordPanelDb.have_password_in_queue?
   end
 
   def end_fail
