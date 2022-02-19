@@ -88,6 +88,5 @@ class PasswordPanelDb < ApplicationRecord
     elsif !lasts_two_passwords[1].preferencial
       return "preferencial"
     end
-
   end
 end

@@ -1,5 +1,9 @@
 class PasswordChannel < ApplicationCable::Channel
   def subscribed
-    stream_from "password_channel"
+    stream_for "password_channel"
+  end
+
+  def receive(data)
+    p data
   end
 end
