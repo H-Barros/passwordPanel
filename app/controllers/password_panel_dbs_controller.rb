@@ -2,7 +2,7 @@ class PasswordPanelDbsController < ApplicationController
   before_action :set_password_panel_db, only: [:update, :show, :destroy]
 
   def index
-    @password_panel_dbs = PasswordPanelDb.all.order(:id)
+    @password_panel_dbs = User.all
 
     render json: @password_panel_dbs
   end

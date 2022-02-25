@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   root "password_panel_dbs#index"
 
+  mount_devise_token_auth_for 'User', at: 'auth'
+
   resources :password_panel_dbs
 
   get 'call', to: 'password_panel_dbs#call'
