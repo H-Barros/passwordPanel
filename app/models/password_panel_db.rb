@@ -64,9 +64,42 @@ class PasswordPanelDb < ApplicationRecord
       password.save
       password = self.find(passwords_preferencial[0].id)
     end
-    
     return password
   end
+
+  def self.report_password(params_date,params_detalle)
+    if params_date == nil
+      first_date_of_params = Time.now
+      last_date_of_params = Time.now
+
+      first_date_of_params.strftime("%Y-%m-%d")
+      last_date_of_params.strftime("%Y-%m-%d")
+
+      first_date_format_of_params = "#{first_date_of_params} 00:00:00"
+      last_date_format_of_params = "#{last_date_of_params} 23:59:59"
+    else
+      first_report_date = params_date[0..9]
+      last_report_date = params_date[10..19]
+      first_date_format = "#{first_report_date} 00:00:00"
+      last_date_format = "#{last_report_date} 23:59:59"
+    end
+
+      if params_detalle == "completo" 
+          result = PasswordPanelDb.select([:numero,:created_at,:setor,:atendente,:preferencial,:cancelado]).where(created_at: first_date_format..last_date_format)
+      elsif params_detalle == "setor"
+        result = PasswordPanelDb.select([:numero,:created_at,:setor,:preferencial,:cancelado]).where(created_at: first_date_format..last_date_format)
+      elsif params_detalle == "servico"
+        result = PasswordPanelDb.select([:numero,:created_at,:servico,:preferencial,:cancelado]).where(created_at: first_date_format..last_date_format)
+      elsif params_detalle == "atendente"
+        result = PasswordPanelDb.select([:numero,:created_at,:atendente,:preferencial,:cancelado]).where(created_at: first_date_format..last_date_format)
+      elsif params_detalle == nil
+        result = PasswordPanelDb.where(created_at: first_date_format..last_date_format).order(:created_at)
+      else
+        result = PasswordPanelDb.where(created_at: first_date_format_of_params..last_date_format_of_params).order(:created_at)
+      end
+        return result
+    end
+
 
   def self.have_password_in_queue?
     disponible_password = self.where("inicio_atendimento is null")
@@ -75,6 +108,7 @@ class PasswordPanelDb < ApplicationRecord
 
     return disponible_password.length
   end
+
 
   private
 

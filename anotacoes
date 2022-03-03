@@ -1,1 +1,2 @@
-Fazer uma migration com email unique
+Time.new -> Cria uma variável com o tempo atual
+Time.new - Time.new -> retorna a diferença em segundos

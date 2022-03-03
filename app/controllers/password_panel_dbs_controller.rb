@@ -2,7 +2,7 @@ class PasswordPanelDbsController < ApplicationController
   before_action :set_password_panel_db, only: [:update, :show, :destroy]
 
   def index
-    @password_panel_dbs = User.all
+    @password_panel_dbs = PasswordPanelDb.all.order(:id)
 
     render json: @password_panel_dbs
   end
@@ -54,16 +54,15 @@ class PasswordPanelDbsController < ApplicationController
   end
 
   def report
-      first_report_date = params[:filter][0..9]
-      last_report_date = params[:filter][10..19]
-      first_date_format = "#{first_report_date} 00:00:00"
-      last_date_format = "#{last_report_date} 23:59:59" 
-      result = PasswordPanelDb.where(inicio_atendimento: first_date_format..last_date_format).order(:inicio_atendimento)
-      if result.empty?
-        render json: {"message" => "Nenhum resultado encontrado"}
-      else
-        render json: result
-      end
+    params_date = params["data"]
+    params_detalle = params["res"]
+    result = PasswordPanelDb.report_password(params_date,params_detalle)
+
+    if result.empty?
+      render json: {"message" => "Nenhum resultado encontrado"}
+    else
+     render json: result
+    end
   end
 
 private
